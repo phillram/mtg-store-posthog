@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { getCardPrice, formatPrice } from "@/lib/types";
+import posthog from "posthog-js";
 
 interface CheckoutProps {
   onBack: () => void;
@@ -26,6 +27,38 @@ export default function Checkout({ onBack }: CheckoutProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const anonymousId = posthog.get_distinct_id();
+
+    posthog.identify(form.email, {
+      name: form.name,
+      email: form.email,
+      city: form.city,
+      state: form.state,
+      zip: form.zip,
+    });
+
+    if (anonymousId && anonymousId !== form.email) {
+      posthog.alias(anonymousId, form.email);
+    }
+
+    posthog.capture("order_completed", {
+      total_price: totalPrice,
+      total_items: items.reduce((sum, item) => sum + item.quantity, 0),
+      items: items.map((item) => ({
+        card_id: item.card.id,
+        card_name: item.card.name,
+        card_set: item.card.set_name,
+        card_rarity: item.card.rarity,
+        card_price: getCardPrice(item.card),
+        quantity: item.quantity,
+        line_total: getCardPrice(item.card) * item.quantity,
+      })),
+      shipping_city: form.city,
+      shipping_state: form.state,
+      shipping_zip: form.zip,
+    });
+
     setConfirmedTotal(totalPrice);
     setStep("confirmed");
     clearCart();

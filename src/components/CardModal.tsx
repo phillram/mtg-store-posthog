@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ScryfallCard, getCardImage, getCardBackImage, isDoubleFaced, getCardPrice, formatPrice } from "@/lib/types";
 import { useCart } from "@/context/CartContext";
+import posthog from "posthog-js";
 
 interface CardModalProps {
   card: ScryfallCard;
@@ -19,6 +20,17 @@ export default function CardModal({ card, onClose }: CardModalProps) {
   const currentImage = showBack
     ? getCardBackImage(card, "large")!
     : getCardImage(card, "large");
+
+  useEffect(() => {
+    posthog.capture("card_viewed", {
+      card_id: card.id,
+      card_name: card.name,
+      card_set: card.set_name,
+      card_rarity: card.rarity,
+      card_price: price,
+      card_type: card.type_line,
+    });
+  }, [card, price]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
@@ -95,6 +107,13 @@ export default function CardModal({ card, onClose }: CardModalProps) {
                 <button
                   onClick={() => {
                     addItem(card);
+                    posthog.capture("card_added_to_cart", {
+                      card_id: card.id,
+                      card_name: card.name,
+                      card_set: card.set_name,
+                      card_rarity: card.rarity,
+                      card_price: price,
+                    });
                     onClose();
                   }}
                   className="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-semibold transition-colors cursor-pointer"

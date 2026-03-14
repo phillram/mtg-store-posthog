@@ -2,27 +2,42 @@ import { ScryfallCard, ScryfallSet } from "./types";
 
 const BASE_URL = "https://api.scryfall.com";
 
-async function scryfallFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`Scryfall API error: ${res.status}`);
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function scryfallFetch<T>(path: string, retries = 3): Promise<T> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    if (res.status === 429) {
+      await delay(1000 * (attempt + 1));
+      continue;
+    }
+
+    if (!res.ok) {
+      throw new Error(`Scryfall API error: ${res.status}`);
+    }
+    return res.json();
   }
-  return res.json();
+  throw new Error("Scryfall API error: 429 (rate limited after retries)");
 }
 
 export async function getRandomCards(count: number = 10, setCode?: string): Promise<ScryfallCard[]> {
   const query = setCode ? `q=set%3A${encodeURIComponent(setCode)}` : "";
   const cards: ScryfallCard[] = [];
-  const promises = Array.from({ length: count }, (_, i) => {
+  for (let i = 0; i < count; i++) {
     const sep = query ? "&" : "?";
     const base = `/cards/random${query ? `?${query}` : ""}`;
-    return scryfallFetch<ScryfallCard>(`${base}${sep}_=${Date.now()}-${i}`);
-  });
-  const results = await Promise.all(promises);
-  cards.push(...results);
+    const card = await scryfallFetch<ScryfallCard>(`${base}${sep}_=${Date.now()}-${i}`);
+    cards.push(card);
+    if (i < count - 1) {
+      await delay(100);
+    }
+  }
   return cards;
 }
 

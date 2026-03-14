@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ScryfallCard, getCardImage, getCardPrice, formatPrice, isDoubleFaced } from "@/lib/types";
 import { useCart } from "@/context/CartContext";
 import CardModal from "./CardModal";
+import posthog from "posthog-js";
 
 interface CardItemProps {
   card: ScryfallCard;
@@ -55,7 +56,16 @@ export default function CardItem({ card }: CardItemProps) {
             </span>
             {price > 0 && (
               <button
-                onClick={() => addItem(card)}
+                onClick={() => {
+                  addItem(card);
+                  posthog.capture("card_added_to_cart", {
+                    card_id: card.id,
+                    card_name: card.name,
+                    card_set: card.set_name,
+                    card_rarity: card.rarity,
+                    card_price: price,
+                  });
+                }}
                 className="px-3 py-1 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
               >
                 Add to Cart
