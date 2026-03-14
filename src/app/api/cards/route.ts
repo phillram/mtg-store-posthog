@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const setCode = searchParams.get("set");
 
   try {
-    const cards = await getRandomCards(10, setCode || undefined);
+    const cards = await getRandomCards(5, setCode || undefined);
 
     return NextResponse.json({ cards });
   } catch (error) {

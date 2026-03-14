@@ -4,7 +4,7 @@ import StorePage from "@/components/StorePage";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [cards, sets] = await Promise.all([getRandomCards(10), getSets()]);
+  const [cards, sets] = await Promise.all([getRandomCards(5), getSets()]);
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
