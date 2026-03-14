@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MTG Card Shop
+
+An ecommerce store for browsing and purchasing Magic: The Gathering cards, powered by the [Scryfall API](https://scryfall.com/docs/api).
+
+## Features
+
+- **Random Cards** — Displays 10 random MTG cards on each page load, with a refresh button to load new ones
+- **Set Filter** — Searchable dropdown to filter cards by any MTG set (expansions, core sets, masters, etc.). When a set is selected, all 10 cards come from that set
+- **Live Pricing** — Each card displays its current USD market price from Scryfall
+- **Card Details Popup** — Click any card to view a larger image with full details (name, set, type line, oracle text, rarity, mana cost)
+- **Double-Faced Cards** — Detected and labeled with a badge. The detail popup includes a flip button to view both sides
+- **Shopping Cart** — Slide-out cart sidebar with quantity controls, item removal, and running total
+- **Checkout** — Full checkout flow with shipping and payment forms, order summary, and confirmation screen
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org) (App Router)
+- TypeScript
+- Tailwind CSS
+- [Scryfall API](https://scryfall.com/docs/api) (free, no API key required)
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies and start the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    page.tsx            # Main store page (server component)
+    layout.tsx          # Root layout with CartProvider
+    api/cards/route.ts  # API route for fetching cards client-side
+  components/
+    StorePage.tsx       # Store UI with set filter and card grid
+    CardItem.tsx        # Individual card display
+    CardModal.tsx       # Card detail popup with flip support
+    Cart.tsx            # Shopping cart sidebar
+    Checkout.tsx        # Checkout form and confirmation
+  context/
+    CartContext.tsx      # Cart state management
+  lib/
+    scryfall.ts         # Scryfall API client
+    types.ts            # TypeScript types and utility functions
+```
